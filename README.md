@@ -10,6 +10,7 @@ A simple Python syntax highlighter that generates static HTML, built with Zig.
   * Highly extensible
   * Simple CLI
   * Highly customizable CSS
+  * Support for hex, octal, binary, and scientific notation
 
 ## Building
   * Download [Zig](https://ziglang.org)
@@ -17,7 +18,7 @@ A simple Python syntax highlighter that generates static HTML, built with Zig.
   * Binary located in `zig-out/bin/`
 
 ## Usage
-  * html\_coder **SOURCE FILE** **OUTPUT FILE**
+  * html\_coder **[SOURCE FILE]** **[OUTPUT FILE]**
   * Apply a stylesheet, example stylesheet: [style.css](examples/style.css)
 
 ## Example

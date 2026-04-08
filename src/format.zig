@@ -213,17 +213,23 @@ fn formatInternal(data: []const u8, writer: *Writer) Writer.Error!void {
     }
 }
 
+const format_start = "<div class=cblock><pre style=margin:0>";
+const format_end = "</pre></div>";
+
 pub fn format(data: []const u8, writer: *Writer) Writer.Error!void {
-    try writer.writeAll("<div class=cblock><pre style=margin:0>");
+    try writer.writeAll(format_start);
     try formatInternal(data, writer);
-    try writer.writeAll("</pre></div>");
+    try writer.writeAll(format_end);
 }
 
 const debug_allocator = std.testing.allocator;
 const expectEqualSlices = std.testing.expectEqualSlices;
 
 test "format assignment" {
-    const expected = "<i class=cln>01</i> a: int = <span class=cnum>4</span>";
+    const expected = "<span class=cln>001</span> " ++
+        "a: <span class=cint>int</span> " ++
+        "= <span class=cnum>4</span>";
+
     const str = "a: int = 4\x00";
 
     var writer = Writer.Allocating.init(debug_allocator);

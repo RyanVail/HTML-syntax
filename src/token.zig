@@ -76,7 +76,24 @@ pub const Tokenizer = struct {
         maybe_f_string,
         comment,
         identifier,
-        number,
+
+        num,
+
+        // Could be hex, octal, or binary.
+        num_zero_prefix,
+
+        num_hex,
+        num_octal,
+        num_binary,
+
+        // Period found in a number.
+        num_float,
+
+        // Checks for '+' or '-' after an exponent.
+        num_exp_start,
+
+        // 'e' or 'E' found in a number.
+        num_exp,
     };
 
     buffer: []const u8,
@@ -125,8 +142,12 @@ pub const Tokenizer = struct {
                 'a'...('f' - 1), ('f' + 1)...'z', 'A'...'Z', '_' => {
                     continue :state .identifier;
                 },
-                '0'...'9' => {
-                    continue :state .number;
+                '0' => {
+                    self.index += 1;
+                    continue :state .num_zero_prefix;
+                },
+                '1'...'9' => {
+                    continue :state .num;
                 },
                 else => {
                     self.index += 1;
@@ -163,10 +184,81 @@ pub const Tokenizer = struct {
                     }
                 },
             },
-            .number => switch (self.buffer[self.index]) {
+            .num => switch (self.buffer[self.index]) {
                 '0'...'9' => {
                     self.index += 1;
-                    continue :state .number;
+                    continue :state .num;
+                },
+                'e', 'E' => {
+                    self.index += 1;
+                    continue :state .num_exp_start;
+                },
+                '.' => {
+                    self.index += 1;
+                    continue :state .num_float;
+                },
+                else => result.tag = .number,
+            },
+            .num_float => switch (self.buffer[self.index]) {
+                '0'...'9' => {
+                    self.index += 1;
+                    continue :state .num_float;
+                },
+                'e', 'E' => {
+                    self.index += 1;
+                    continue :state .num_exp_start;
+                },
+                else => result.tag = .number,
+            },
+            .num_exp_start => switch (self.buffer[self.index]) {
+                '+', '-' => {
+                    self.index += 1;
+                    continue :state .num_exp;
+                },
+                else => continue :state .num_exp,
+            },
+            .num_exp => switch (self.buffer[self.index]) {
+                '0'...'9' => {
+                    self.index += 1;
+                    continue :state .num_exp;
+                },
+                else => result.tag = .number,
+            },
+            .num_zero_prefix => switch (self.buffer[self.index]) {
+                'x', 'X' => {
+                    self.index += 1;
+                    continue :state .num_hex;
+                },
+                'o', 'O' => {
+                    self.index += 1;
+                    continue :state .num_octal;
+                },
+                'b', 'B' => {
+                    self.index += 1;
+                    continue :state .num_binary;
+                },
+                else => {
+                    continue :state .num;
+                },
+            },
+            .num_hex => switch (self.buffer[self.index]) {
+                '0'...'9', 'a'...'f', 'A'...'F' => {
+                    self.index += 1;
+                    continue :state .num_hex;
+                },
+                else => result.tag = .number,
+            },
+            .num_octal => switch (self.buffer[self.index]) {
+                '0'...'7' => {
+                    self.index += 1;
+                    continue :state .num_octal;
+                },
+                else => result.tag = .number,
+            },
+            .num_binary => switch (self.buffer[self.index]) {
+                '0'...'1' => {
+                    self.index += 1;
+                    continue :state .num_binary;
                 },
                 else => result.tag = .number,
             },
@@ -238,6 +330,74 @@ test "tokenize fstring" {
     const quote = tokenizer.next().?;
     try expectEqual(.quote_double, quote.tag);
     try expectEqualSlices(u8, "\"", quote.getSource(str));
+
+    try expectEqual(null, tokenizer.next());
+}
+
+test "tokenize hex" {
+    const hex = "0xAbCdEf0123456789";
+    const str = hex ++ "x" ++ "\x00";
+    var tokenizer = Tokenizer{ .buffer = str };
+
+    const start = tokenizer.next().?;
+    try expectEqual(.number, start.tag);
+    try expectEqualSlices(u8, hex, start.getSource(str));
+
+    const x = tokenizer.next().?;
+    try expectEqual(.identifier, x.tag);
+    try expectEqualSlices(u8, "x", x.getSource(str));
+
+    try expectEqual(null, tokenizer.next());
+}
+
+test "tokenize octal" {
+    const octal = "0O0124567";
+    const str = octal ++ "8" ++ "\x00";
+    var tokenizer = Tokenizer{ .buffer = str };
+
+    const start = tokenizer.next().?;
+    try expectEqual(.number, start.tag);
+    try expectEqualSlices(u8, octal, start.getSource(str));
+
+    const x = tokenizer.next().?;
+    try expectEqual(.number, x.tag);
+    try expectEqualSlices(u8, "8", x.getSource(str));
+
+    try expectEqual(null, tokenizer.next());
+}
+
+test "tokenize binary" {
+    const binary = "0b0001000";
+    const str = binary ++ "\x00";
+    var tokenizer = Tokenizer{ .buffer = str };
+
+    const start = tokenizer.next().?;
+    try expectEqual(.number, start.tag);
+    try expectEqualSlices(u8, binary, start.getSource(str));
+
+    try expectEqual(null, tokenizer.next());
+}
+
+test "tokenize float" {
+    const float = "100.05e+05";
+    const str = float ++ "\x00";
+    var tokenizer = Tokenizer{ .buffer = str };
+
+    const start = tokenizer.next().?;
+    try expectEqual(.number, start.tag);
+    try expectEqualSlices(u8, float, start.getSource(str));
+
+    try expectEqual(null, tokenizer.next());
+}
+
+test "tokenize exp" {
+    const float = "4e-0";
+    const str = float ++ "\x00";
+    var tokenizer = Tokenizer{ .buffer = str };
+
+    const start = tokenizer.next().?;
+    try expectEqual(.number, start.tag);
+    try expectEqualSlices(u8, float, start.getSource(str));
 
     try expectEqual(null, tokenizer.next());
 }
