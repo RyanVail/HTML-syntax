@@ -3,6 +3,7 @@ const assert = std.debug.assert;
 const Writer = std.Io.Writer;
 const token = @import("token.zig");
 const Tokenizer = token.Tokenizer;
+const shared = @import("../shared.zig");
 
 const State = enum {
     const Self = @This();
@@ -17,20 +18,11 @@ const State = enum {
     string_single,
 };
 
-fn writeLineNum(writer: *Writer, line: usize) Writer.Error!void {
-    try writer.writeAll("<span class=cln>");
-    try writer.printInt(line, 10, .lower, .{
-        .width = 3,
-        .fill = '0',
-    });
-    try writer.writeAll("</span> ");
-}
-
-fn formatInternal(data: []const u8, writer: *Writer) Writer.Error!void {
+pub fn format(data: []const u8, writer: *Writer) Writer.Error!void {
     var tokenizer: Tokenizer = .{ .buffer = data };
 
     var line: usize = 1;
-    try writeLineNum(writer, line);
+    try shared.writeLineNum(writer, line);
 
     var fstring_depth: usize = 0;
 
@@ -129,7 +121,7 @@ fn formatInternal(data: []const u8, writer: *Writer) Writer.Error!void {
 
                     if (source[0] == '\n') {
                         line += 1;
-                        try writeLineNum(writer, line);
+                        try shared.writeLineNum(writer, line);
                     }
 
                     continue :state .start;
@@ -213,15 +205,6 @@ fn formatInternal(data: []const u8, writer: *Writer) Writer.Error!void {
     }
 }
 
-const format_start = "<div class=cblock><pre style=margin:0>";
-const format_end = "</pre></div>";
-
-pub fn format(data: []const u8, writer: *Writer) Writer.Error!void {
-    try writer.writeAll(format_start);
-    try formatInternal(data, writer);
-    try writer.writeAll(format_end);
-}
-
 const debug_allocator = std.testing.allocator;
 const expectEqualSlices = std.testing.expectEqualSlices;
 
@@ -235,6 +218,6 @@ test "format assignment" {
     var writer = Writer.Allocating.init(debug_allocator);
     defer writer.deinit();
 
-    try formatInternal(str, &writer.writer);
+    try format(str, &writer.writer);
     try expectEqualSlices(u8, expected, writer.written());
 }
