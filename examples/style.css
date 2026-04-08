@@ -1,0 +1,45 @@
+html {
+    background: #252525;
+    color: white;
+}
+
+.cln {
+    color: #707070;
+}
+
+.cblock {
+    font-family: monospace;
+    background: #101010;
+    padding: 8px;
+}
+
+.cconst { color: #8fb0fc }
+.cchr { color: lightgreen }
+.clist { color: lightgreen }
+.cint { color: lightgreen }
+.cstr { color: lightgreen }
+.cbool { color: lightgreen }
+.cNone { color: lightgreen }
+.cfor { color: #fc6eb1 }
+.cin { color: #fc6eb1 }
+.creturn { color: #fc6eb1 }
+.ccom { color: lightblue }
+.crange { color: #fc9785 }
+.clen { color: lightgreen }
+.cimport { color: salmon }
+.cfrom { color: salmon }
+.cprint { color: aquamarine }
+.c__name__ { color: darkturquoise }
+.cTrue { color: #c656e2 }
+.cFalse { color: #c656e2 }
+
+.cif { color: #fc6eb1 }
+.celse { color: #fc6eb1 }
+
+.cclass { color: #fc6eb1 }
+.cclass-name { color: aquamarine }
+.cdef { color: #fc6eb1 }
+.cfn { color: lightgreen }
+.cself { color: #5bfcfcc9 }
+.cnum { color: #c656e2 }
+.cquote { color: orange }

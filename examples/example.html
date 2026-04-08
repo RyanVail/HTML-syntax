@@ -1,0 +1,28 @@
+<head>
+  <link rel="stylesheet" href="style.css">
+</head>
+<div class=cblock><pre style=margin:0><span class=cln>001</span> <span class=cimport>import</span> random
+<span class=cln>002</span> 
+<span class=cln>003</span> <span class=cconst>THIRTY_START</span>: <span class=cint>int</span> = <span class=cnum>30</span>
+<span class=cln>004</span> <span class=cconst>THIRTY_END</span>: <span class=cint>int</span> = <span class=cnum>39</span>
+<span class=cln>005</span> 
+<span class=cln>006</span> <span class=cclass>class</span> <span class=cclass-name>Person</span>:
+<span class=cln>007</span>     <span class=cdef>def</span> <span class=cfn>__init__</span>(<span class=cself>self</span>, name: <span class=cstr>str</span>, age: <span class=cint>int</span>) -> <span class=cNone>None</span>:
+<span class=cln>008</span>         <span class=cself>self</span>.name: <span class=cstr>str</span> = name
+<span class=cln>009</span>         <span class=cself>self</span>.age: <span class=cint>int</span> = age
+<span class=cln>010</span> 
+<span class=cln>011</span>     <span class=cdef>def</span> <span class=cfn>__str__</span>(<span class=cself>self</span>) -> <span class=cstr>str</span>:
+<span class=cln>012</span>         <span class=creturn>return</span> <span class=cquote>f"My name is </span>{<span class=cself>self</span>.name}<span class=cquote> and I'm </span>{<span class=cself>self</span>.age}<span class=cquote> years old!"</span>
+<span class=cln>013</span> 
+<span class=cln>014</span>     <span class=cdef>def</span> <span class=cfn>is_thirty</span>(<span class=cself>self</span>) -> <span class=cbool>bool</span>:
+<span class=cln>015</span>         <span class=creturn>return</span> <span class=cself>self</span>.age >= <span class=cconst>THIRTY_START</span> and <span class=cself>self</span>.age <= <span class=cconst>THIRTY_END</span>
+<span class=cln>016</span> 
+<span class=cln>017</span> <span class=cif>if</span> <span class=c__name__>__name__</span> == <span class=cquote>"__main__"</span>:
+<span class=cln>018</span>     john = Person(<span class=cquote>"John"</span>, <span class=cnum>25</span>)
+<span class=cln>019</span>     <span class=cprint>print</span>(john)
+<span class=cln>020</span> 
+<span class=cln>021</span>     doe = Person(<span class=cquote>"Doe"</span>, <span class=cnum>31</span>)
+<span class=cln>022</span>     <span class=cprint>print</span>(doe)
+<span class=cln>023</span> 
+<span class=cln>024</span>     years = [year <span class=cfor>for</span> year <span class=cin>in</span> <span class=crange>range</span>(john.age)]
+<span class=cln>025</span> </pre></div>
